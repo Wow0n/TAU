@@ -1,4 +1,4 @@
-Feature: Login to https://www.saucedemo.com/
+Feature: Check login edge cases
 
   Scenario: Correct Login
     Given I am on the login page

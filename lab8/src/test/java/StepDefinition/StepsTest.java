@@ -1,12 +1,14 @@
 package StepDefinition;
 
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.AfterEach;
+import org.hamcrest.CoreMatchers;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -23,7 +25,16 @@ public class StepsTest {
     @BeforeAll
     public static void setUp() {
         WebDriverManager.chromedriver().setup();
+    }
+
+    @Before
+    public static void setUpScenario() {
         driver = new ChromeDriver();
+    }
+
+    @After
+    public void closeBrowser() {
+        driver.quit();
     }
 
     @Given("I am on the login page")
@@ -43,6 +54,39 @@ public class StepsTest {
         driver.findElement(By.cssSelector("*[data-test=\"password\"]")).sendKeys(password);
     }
 
+    @And("I login correctly by username {string} and password {string}")
+    public void iLoginCorrectlyByUsernameAndPassword(String username, String password) {
+        iEnterTheUsername(username);
+        iEnterPassword(password);
+        iClickTheLoginButton();
+    }
+
+    @And("I add two products to cart")
+    public void iAddTwoProductsToCart() {
+        driver.findElement(By.cssSelector("*[data-test=\"add-to-cart-sauce-labs-backpack\"]")).click();
+        driver.findElement(By.cssSelector("*[data-test=\"add-to-cart-sauce-labs-bike-light\"]")).click();
+    }
+
+    @When("I refresh the page")
+    public void iRefreshThePage() {
+        driver.navigate().refresh();
+    }
+
+    @And("I click on product {string}")
+    public void iClickOnProduct(String product) {
+        driver.findElement(By.cssSelector(product)).click();
+    }
+
+    @And("I go back to products page")
+    public void iGoBackToProductsPage() {
+        driver.findElement(By.cssSelector("*[data-test=\"back-to-products\"]")).click();
+    }
+
+    @And("I add it to the cart")
+    public void iAddItToTheCart() {
+        driver.findElement(By.cssSelector("*[data-test=\"add-to-cart-sauce-labs-fleece-jacket\"]")).click();
+    }
+
     @When("I click the login button")
     public void iClickTheLoginButton() {
         driver.findElement(By.cssSelector("*[data-test=\"login-button\"]")).click();
@@ -59,8 +103,20 @@ public class StepsTest {
         assertThat(driver.findElement(By.cssSelector("*[data-test=\"error\"]")).getText(), is(msg));
     }
 
-    @AfterEach()
-    public void closeBrowser() {
-        driver.quit();
+    @Then("I check if cart badge equals {string}")
+    public void iCheckIfCartBadgeEquals(String numberOfProducts) {
+        assertThat(driver.findElement(By.cssSelector(".shopping_cart_badge")).getText(), is(numberOfProducts));
+    }
+
+    @And("I filter by {string}")
+    public void iFilterBy(String filterOption) {
+        WebElement dropdown = driver.findElement(By.cssSelector("*[data-test=\"product_sort_container\"]"));
+        dropdown.findElement(By.xpath("//option[. = '" + filterOption + "']")).click();
+    }
+
+    @Then("I check if the first product is {string}")
+    public void iCheckIfTheFirstProductIs(String firstProduct) {
+        driver.findElement(By.xpath("//div[@id='header_container']/div[2]/div/span/select")).click();
+        assertThat(driver.findElement(By.xpath("//div[@id='inventory_container']/div/div/div[2]/div/a/div")).getText(), CoreMatchers.is(firstProduct));
     }
 }
